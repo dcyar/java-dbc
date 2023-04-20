@@ -9,13 +9,37 @@ import java.util.List;
 import java.util.Map;
 
 public class ProductoController {
+	public int modificar(Integer id, String nombre, String descripcion, Integer cantidad) throws SQLException {
+		Connection con = new ConnectionFactory().recuperaConexion();
 
-	public void modificar(String nombre, String descripcion, Integer id) {
-		// TODO
+		PreparedStatement statement = con.prepareStatement("UPDATE producto SET nombre=?, descripcion=?, cantidad=? WHERE id=?");
+		statement.setString(1, nombre);
+		statement.setString(2, descripcion);
+		statement.setInt(3, cantidad);
+		statement.setInt(4, id);
+
+		statement.execute();
+
+		int updatedCount = statement.getUpdateCount();
+
+		con.close();
+
+		return updatedCount;
 	}
 
-	public void eliminar(Integer id) {
-		// TODO
+	public int eliminar(Integer id) throws SQLException {
+		Connection con = new ConnectionFactory().recuperaConexion();
+
+		PreparedStatement statement = con.prepareStatement("DELETE FROM producto WHERE id = ?");
+		statement.setInt(1, id);
+
+		statement.execute();
+
+		int updateCount = statement.getUpdateCount();
+
+		con.close();
+
+		return updateCount;
 	}
 
 	public List<Map<String, String>> listar() throws SQLException {
@@ -47,18 +71,17 @@ public class ProductoController {
     public void guardar(Map<String, String> producto) throws SQLException {
 		Connection con = new ConnectionFactory().recuperaConexion();
 
-		Statement statement = con.createStatement();
+		PreparedStatement statement = con.prepareStatement("INSERT INTO producto(nombre, descripcion, cantidad) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+		statement.setString(1, producto.get("NOMBRE"));
+		statement.setString(2, producto.get("DESCRIPCION"));
+		statement.setString(3, producto.get("CANTIDAD"));
 
-		statement.execute(
-				"INSERT INTO producto(nombre, descripcion, cantidad) VALUES('" + producto.get("NOMBRE") + "', '" + producto.get("DESCRIPCION") + "', " + producto.get("CANTIDAD") + ")",
-				Statement.RETURN_GENERATED_KEYS
-		);
+		statement.execute();
 
 		ResultSet resultSet = statement.getGeneratedKeys();
 
 		while(resultSet.next()) {
 			System.out.printf("Fue insertado el producto de ID %d", resultSet.getInt(1));
-
 		}
 
 		con.close();
